@@ -1,0 +1,80 @@
+# HEZZUZ Logs 3.1 - Coolify
+# Deploy recomendado: Docker Compose via Git no Coolify.
+# O PostgreSQL deve ser um recurso separado do Coolify e DATABASE_URL deve usar a URL INTERNA.
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    stop_grace_period: 30s
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: ${DATABASE_URL:?Cole a Postgres URL interna do Coolify}
+      DATABASE_SSL: ${DATABASE_SSL:-false}
+      DB_POOL_MAX: ${DB_POOL_MAX:-20}
+      DB_CONNECT_TIMEOUT_MS: ${DB_CONNECT_TIMEOUT_MS:-10000}
+      DB_STARTUP_RETRIES: ${DB_STARTUP_RETRIES:-30}
+      DB_STARTUP_RETRY_MS: ${DB_STARTUP_RETRY_MS:-2000}
+      TRUST_PROXY: ${TRUST_PROXY:-1}
+      REQUEST_BODY_LIMIT: ${REQUEST_BODY_LIMIT:-4mb}
+
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      ADMIN_PASSWORD: ${SERVICE_PASSWORD_ADMIN}
+      AUTH_SECRET: ${SERVICE_HEX_64_AUTHSECRET}
+      AUTH_TOKEN_HOURS: ${AUTH_TOKEN_HOURS:-12}
+      AUTH_COOKIE_NAME: ${AUTH_COOKIE_NAME:-hezzuz_logs_session}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-true}
+      LOGIN_RATE_MAX: ${LOGIN_RATE_MAX:-10}
+      LOGIN_RATE_WINDOW_SECONDS: ${LOGIN_RATE_WINDOW_SECONDS:-300}
+
+      HEZZUZ_INGEST_KEYS: >-
+        {"survival":"${SERVICE_HEX_64_SURVIVAL}","lobby":"${SERVICE_HEX_64_LOBBY}","skyblock":"${SERVICE_HEX_64_SKYBLOCK}"}
+      INGEST_MAX_BATCH: ${INGEST_MAX_BATCH:-100}
+      INGEST_CLOCK_SKEW_SECONDS: ${INGEST_CLOCK_SKEW_SECONDS:-300}
+      INGEST_RATE_PER_SECOND: ${INGEST_RATE_PER_SECOND:-500}
+      SERVER_OFFLINE_AFTER_SECONDS: ${SERVER_OFFLINE_AFTER_SECONDS:-90}
+      EVENT_RETENTION_DAYS: ${EVENT_RETENTION_DAYS:-90}
+      RETENTION_BATCH_SIZE: ${RETENTION_BATCH_SIZE:-50000}
+
+      DISCORD_FORWARD_MODE: ${DISCORD_FORWARD_MODE:-critical}
+      DISCORD_WEBHOOK_DEFAULT: ${DISCORD_WEBHOOK_DEFAULT:-}
+      DISCORD_WEBHOOK_MODERATION: ${DISCORD_WEBHOOK_MODERATION:-}
+      DISCORD_WEBHOOK_ERRORS: ${DISCORD_WEBHOOK_ERRORS:-}
+      DISCORD_WEBHOOK_SERVER: ${DISCORD_WEBHOOK_SERVER:-}
+      DISCORD_THROTTLE_MS: ${DISCORD_THROTTLE_MS:-450}
+    expose:
+      - "3001"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/readyz').then(r=>{if(!r.ok)process.exit(1)}).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m,mode=1777
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    stop_grace_period: 15s
+    depends_on:
+      backend:
+        condition: service_healthy
+    expose:
+      - "80"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz >/dev/null || exit 1"]
+      interval: 30s
+      timeout: 5s
+      start_period: 15s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true

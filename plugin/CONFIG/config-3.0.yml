@@ -1,0 +1,149 @@
+# ================================================================
+# HezzChatDiscord / HEZZUZ Logs Bridge 3.0.0
+# Todos os eventos -> HEZZUZ Logs API -> PostgreSQL / Dashboard
+# Discord direto fica desativado por padrao para evitar HTTP 429.
+# ================================================================
+server-name: "Survival"
+debug: false
+
+hezzuz-api:
+  enabled: true
+  endpoint: "https://logs.seudominio.com.br/api/v1/events/batch"
+  heartbeat-url: "https://logs.seudominio.com.br/api/v1/heartbeat"
+  server-id: "survival"
+  api-key: "TROQUE_PELO_SECRET_DO_BACKEND"
+  batch-size: 100
+  flush-interval-ms: 500
+  timeout-seconds: 8
+  max-queue-files: 100000
+
+discord:
+  # RECOMENDADO: false. O backend encaminha alertas ao Discord de forma centralizada.
+  direct-enabled: false
+  throttle-ms: 450
+
+  # Mantidos para compatibilidade. So sao usados se direct-enabled=true.
+  public-webhook-url: ""
+  private-webhook-url: ""
+  clan-webhook-url: ""
+  ally-webhook-url: ""
+  staff-webhook-url: ""
+  audit-webhook-url: ""
+  moderation-webhook-url: ""
+  permissions-webhook-url: ""
+  economy-webhook-url: ""
+  trades-webhook-url: ""
+  crates-webhook-url: ""
+  protection-webhook-url: ""
+  gameplay-webhook-url: ""
+  server-webhook-url: ""
+  use-player-avatar: true
+  player-avatar-url: "https://mc-heads.net/avatar/{uuid}/128"
+  timeout-seconds: 8
+
+logging:
+  timezone: "America/Sao_Paulo"
+  date-format: "dd/MM/yyyy"
+  time-format: "HH:mm:ss"
+  datetime-format: "dd/MM/yyyy HH:mm:ss"
+
+public-messages:
+  enabled: true
+  format: "**[{datetime}] [{server}] [{channel}] {player}** » {message}"
+private-messages:
+  enabled: false
+  format: "🔒 **[{datetime}] [{server}] [{channel}] {sender} → {target}** » {message}"
+channels:
+  mode: "BLACKLIST"
+  list: []
+
+simpleclans:
+  enabled: true
+  clan-chat:
+    enabled: true
+    commands: ["."]
+    format: "🏰 **[{datetime}] [{server}] [CLÃ:{clan}] {player}** » {message}"
+  ally-chat:
+    enabled: true
+    commands: ["ally"]
+    format: "🤝 **[{datetime}] [{server}] [ALIADOS:{clan}] {player}** » {message}"
+
+cmi:
+  enabled: true
+  staff-chat:
+    enabled: true
+    format: "🛡️ **[{datetime}] [{server}] [STAFF] {player}** » {message}"
+
+integrations:
+  advancedban:
+    enabled: false
+  advancedbanz:
+    enabled: true
+  luckperms:
+    enabled: true
+  quickshop:
+    enabled: true
+  excellentcrates:
+    enabled: true
+  playerpoints:
+    enabled: true
+    minimum-change-to-log: 10
+  betterrtp:
+    enabled: true
+  redprotect:
+    enabled: true
+    command-fallback: true
+  cmi-admin:
+    enabled: true
+  axtrade:
+    enabled: true
+    command-fallback: true
+  inventoryrollback:
+    enabled: true
+    command-fallback: true
+
+filters:
+  ignore-spoofed: true
+  dedupe-window-ms: 1200
+
+paper-events:
+  enabled: true
+  server-lifecycle: true
+  joins: true
+  first-join: true
+  quits: true
+  kicks: true
+  denied-logins: true
+  include-location: true
+  deaths: true
+  world-changes: true
+  gamemode-changes: true
+  respawns: true
+  advancements: true
+
+  commands:
+    players: true
+    console: true
+    console-log-luckperms: false
+    ignore:
+    - afk
+    - ping
+
+  # Stream do console para o BANCO/SITE. INFO = praticamente todo log do Paper/plugins.
+  # Se o banco crescer demais, altere minimum-level para WARNING.
+  console-stream:
+    enabled: true
+    minimum-level: "INFO"
+    stacktrace-lines: 16
+
+  # SEVERE continua sendo tratado como alerta especial.
+  console-errors:
+    enabled: true
+    dedupe-seconds: 60
+
+  discord-throttle-ms: 450
+  webhook-username: "HEZZUZ • Survival"
+
+  local-log:
+    enabled: true
+    retention-days: 30

@@ -1,0 +1,12 @@
+# Copie este bloco para o config.yml do HezzChatDiscord.
+# Troque o dominio e a chave do servidor correspondente.
+hezzuz-api:
+  enabled: true
+  endpoint: "https://logs.seudominio.com.br/api/v1/events/batch"
+  heartbeat-url: "https://logs.seudominio.com.br/api/v1/heartbeat"
+  server-id: "survival"
+  api-key: "COLE_SERVICE_HEX_64_SURVIVAL"
+  batch-size: 100
+  flush-interval-ms: 500
+  timeout-seconds: 8
+  max-queue-files: 100000

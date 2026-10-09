@@ -1,0 +1,19 @@
+name: HezzChatDiscord
+version: 3.0.0-HEZZUZ
+main: br.com.hezz.chatdiscord.HezzChatDiscord
+api-version: '1.20'
+author: Anderson / Hezz
+website: https://hezzuz.com.br/
+depend: [nChat]
+softdepend: [SimpleClans, CMI, AdvancedBan, AdvancedBanZ, LuckPerms, QuickShop, QuickShop-Hikari, ExcellentCrates, PlayerPoints, BetterRTP, RedProtect, AxTrade, InventoryRollbackPlus]
+description: Hub HEZZUZ 3.0 de auditoria - todos os eventos para HEZZUZ Logs API/PostgreSQL, dashboard em tempo real e Discord opcional.
+commands:
+  hcd:
+    aliases: [hezzlogger]
+    description: Administra o HezzLogger.
+    usage: /hcd <test|status|reload>
+    permission: hezzchatdiscord.admin
+permissions:
+  hezzchatdiscord.admin:
+    description: Administra o HezzLogger.
+    default: op
