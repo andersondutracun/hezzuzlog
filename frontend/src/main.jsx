@@ -147,6 +147,7 @@ function Player(){
   const [total,setTotal]=useState(0);
   const [page,setPage]=useState(1);
   const [loading,setLoading]=useState(false);
+  const [queryError,setQueryError]=useState('');
   const [filters,setFilters]=useState({q:'',server:'',category:'',severity:'',hours:'720'});
 
   useEffect(()=>{
@@ -159,6 +160,7 @@ function Player(){
 
   async function search(next=filters,nextPage=1){
     setLoading(true);
+    setQueryError('');
     try{
       const sp=new URLSearchParams({limit:'100',page:String(nextPage)});
       if(next.q)sp.set('q',next.q);
@@ -170,6 +172,10 @@ function Player(){
       setEvents(r.events||[]);
       setTotal(r.total||0);
       setPage(r.page||nextPage);
+    }catch(err){
+      setEvents([]);
+      setTotal(0);
+      setQueryError(err?.message||'Falha ao consultar o histórico.');
     }finally{
       setLoading(false);
     }
@@ -251,6 +257,7 @@ function Player(){
       </div>
     </section>
 
+    {queryError&&<div className="errorbox investigation-error">Falha ao carregar os eventos: {queryError}</div>}
     <section className="timeline-toolbar">
       <div><b>{total.toLocaleString('pt-BR')}</b> eventos encontrados <span>• página {page} de {pages}</span></div>
       <div className="pagination">

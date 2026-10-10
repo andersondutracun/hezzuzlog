@@ -242,39 +242,52 @@ app.get('/api/v1/players/:uuid/events', authMiddleware, asyncRoute(async (req, r
   const page = Math.max(Number(req.query.page || 1), 1);
   const limit = Math.min(Math.max(Number(req.query.limit || 100), 1), 200);
   const where = ['player_uuid=$1'];
-  const p = [uuid];
+  const params = [uuid];
 
-  const add = (sql, value) => {
-    p.push(value);
-    where.push(sql.replace('?', `${p.length}`));
+  const add = (column, value) => {
+    params.push(value);
+    where.push(`${column}=$${params.length}`);
   };
 
-  if (req.query.server) add('server_id=?', String(req.query.server));
-  if (req.query.category) add('category=?', String(req.query.category).toLowerCase());
-  if (req.query.type) add('type=?', String(req.query.type).toUpperCase());
-  if (req.query.severity) add('severity=?', String(req.query.severity).toUpperCase());
+  if (req.query.server) add('server_id', String(req.query.server));
+  if (req.query.category) add('category', String(req.query.category).toLowerCase());
+  if (req.query.type) add('type', String(req.query.type).toUpperCase());
+  if (req.query.severity) add('severity', String(req.query.severity).toUpperCase());
+
   if (req.query.q) {
-    p.push(`%${String(req.query.q).slice(0,200)}%`);
-    where.push(`(message ILIKE ${p.length} OR type ILIKE ${p.length} OR category ILIKE ${p.length} OR server_id ILIKE ${p.length})`);
+    params.push(`%${String(req.query.q).slice(0,200)}%`);
+    const idx = params.length;
+    where.push(`(message ILIKE $${idx} OR type ILIKE $${idx} OR category ILIKE $${idx} OR server_id ILIKE $${idx})`);
   }
 
   const hours = Number(req.query.hours || 0);
   if (Number.isFinite(hours) && hours > 0) {
-    p.push(Math.min(hours, 24 * 365 * 5));
-    where.push(`occurred_at >= now() - (${p.length}::text || ' hours')::interval`);
+    params.push(Math.min(Math.floor(hours), 24 * 365 * 5));
+    where.push(`occurred_at >= now() - make_interval(hours => $${params.length}::int)`);
   }
 
-  const w = `WHERE ${where.join(' AND ')}`;
-  const countP = [...p];
-  p.push(limit); const lidx = p.length;
-  p.push((page - 1) * limit); const oidx = p.length;
+  const whereSql = `WHERE ${where.join(' AND ')}`;
+  const countParams = [...params];
+
+  params.push(limit);
+  const limitIdx = params.length;
+  params.push((page - 1) * limit);
+  const offsetIdx = params.length;
 
   const [rows, count] = await Promise.all([
-    pool.query(`SELECT * FROM events ${w} ORDER BY occurred_at DESC LIMIT ${lidx} OFFSET ${oidx}`, p),
-    pool.query(`SELECT count(*)::int total FROM events ${w}`, countP)
+    pool.query(
+      `SELECT * FROM events ${whereSql} ORDER BY occurred_at DESC LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+      params
+    ),
+    pool.query(`SELECT count(*)::int total FROM events ${whereSql}`, countParams)
   ]);
 
-  res.json({ page, limit, total:count.rows[0].total, events:rows.rows });
+  res.json({
+    page,
+    limit,
+    total: count.rows[0].total,
+    events: rows.rows
+  });
 }));
 
 app.get('/api/v1/moderation', authMiddleware, asyncRoute(async (_req, res) => {
