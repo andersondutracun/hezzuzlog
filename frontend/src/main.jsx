@@ -25,7 +25,18 @@ const TYPE_LABELS = {
   MARRIED:'Casamento', DIVORCED:'Divórcio', ISLAND_CREATED:'Ilha criada',
   ISLAND_DELETED:'Ilha removida', ISLAND_RESET:'Ilha resetada',
   ISLAND_LEVEL_CALCULATED:'Nível da ilha', CHALLENGE_COMPLETED:'Desafio concluído',
-  LEVEL_COMPLETED:'Nível de desafios concluído'
+  LEVEL_COMPLETED:'Nível de desafios concluído',
+  ADVANCEDBANZ_BAN:'Banimento permanente',
+  ADVANCEDBANZ_TEMP_BAN:'Banimento temporário',
+  ADVANCEDBANZ_IP_BAN:'Banimento por IP',
+  ADVANCEDBANZ_TEMP_IP_BAN:'Banimento temporário por IP',
+  ADVANCEDBANZ_MUTE:'Mute permanente',
+  ADVANCEDBANZ_TEMP_MUTE:'Mute temporário',
+  ADVANCEDBANZ_WARNING:'Advertência',
+  ADVANCEDBANZ_TEMP_WARNING:'Advertência temporária',
+  ADVANCEDBANZ_KICK:'Expulsão',
+  ADVANCEDBANZ_NOTE:'Anotação de moderação',
+  ADVANCEDBANZ_REVOKE:'Punição revogada'
 };
 const cleanMessage = value => String(value || '')
   .replace(/\*\*/g, '')
